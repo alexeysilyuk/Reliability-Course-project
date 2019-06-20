@@ -77,8 +77,8 @@ class Graph:
             if distances[current_vertex] == inf:
                 break
             for neighbour, cost in self.neighbours[current_vertex]:
-                if(cost==0):
-                    break
+                # if(cost==0):
+                #     break
                 alternative_route = distances[current_vertex] + cost
                 if alternative_route < distances[neighbour]:
                     distances[neighbour] = alternative_route
@@ -101,14 +101,23 @@ edges={"1,2":"down",
        "1,3":"down",
        "2,3":"down",}
 
+forward_edges=[("1", "2", 0), ("2", "3", 0), ("3", "4", 0),("4", "5", 0),("1", "5", 0),
+        ("6", "7", 0), ("7", "8", 0), ("8", "9", 0),("9", "10", 0),("10", "11", 0),
+        ("11", "12", 0), ("12", "13", 0), ("13", "14", 0),("14", "15", 0),("15", "6", 0),
+        ("16", "17", 0), ("17", "18", 0), ("18", "19", 0),("19", "20", 0),("20", "16", 0),
+        ("15", "16", 0), ("7", "17", 0), ("9", "18", 0),("11", "19", 0),("13", "20", 0),
+        ("1", "8", 0), ("2", "10", 0), ("3", "12", 0),("4", "14", 0),("5", "6", 0)]
 
-edges2=[("1", "2", 0), ("2", "3", 0), ("2", "4", 0)
-        # , ("b", "c", 0),
-        # ("b", "d", 0), ("c", "d", 0), ("c", "f", 0), ("d", "e", 0),
-        # ("e", "f", 0)
-        ]
+backward_edges=[("2", "1", 0), ("3", "2", 0), ("4", "3", 0),("5", "4", 0),("5", "1", 0),
+        ("7", "6", 0), ("8", "7", 0), ("9", "8", 0),("10", "9", 0),("11", "10", 0),
+        ("12", "11", 0), ("13", "12", 0), ("14", "13", 0),("15", "14", 0),("6", "15", 0),
+        ("17", "16", 0), ("18", "17", 0), ("19", "18", 0),("20", "19", 0),("16", "20", 0),
+        ("16", "15", 0), ("17", "7", 0), ("18", "9", 0),("19", "11", 0),("20", "13", 0),
+        ("8", "1", 0), ("10", "2", 0), ("12", "3", 0),("14", "4", 0),("6", "5", 0)]
+
+edges2=[]
 r=0
-p=0.9
+p=0.7
 x=0
 
 
@@ -166,31 +175,33 @@ def main():
     getNodes()
     getEdges()
     i=0
-    for edge in list(edges2):
-        print i
-
+    for edge in list(forward_edges):
         x = randomX()
         if x <= p:
-            print edge, "is up"
-            edges2[i]=(edge[0],edge[1],1)
+            # print i,":",edge, "is up"
+            forward_edges[i]=(edge[0],edge[1],1)
+            backward_edges[i] = (edge[1], edge[0], 1)
+            print forward_edges[i]," - ", backward_edges[i]
             # edge[3]="up"
         else:
-            print edge, " is down"
-            print
-            edges2[i]=(edge[0],edge[1],0)
-
+            # print edge, " is down"
+            forward_edges[i]=(edge[0],edge[1],9999)
+            backward_edges[i] = (edge[1], edge[0], 9999)
+            print forward_edges[i]," - ", backward_edges[i]
         i += 1
+    global edges2
+    edges2=forward_edges+backward_edges
     print edges2
 
 def is2PointsConnected(a,b):
     graph = Graph(edges2)
 
-    print(graph.dijkstra("1", "4"))
+    print(graph.dijkstra(a, b))
 
 
 
 
 if __name__ == '__main__':
     main()
-    is2PointsConnected(1,2)
+    is2PointsConnected('17','1')
     # test()
