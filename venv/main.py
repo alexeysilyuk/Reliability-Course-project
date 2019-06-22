@@ -1,5 +1,6 @@
 import random
 from collections import deque, namedtuple
+import itertools
 
 #DIJKSTRA implementation start -----------------------
 
@@ -77,8 +78,8 @@ class Graph:
             if distances[current_vertex] == inf:
                 break
             for neighbour, cost in self.neighbours[current_vertex]:
-                # if(cost==0):
-                #     break
+                if(cost==0):
+                    break
                 alternative_route = distances[current_vertex] + cost
                 if alternative_route < distances[neighbour]:
                     distances[neighbour] = alternative_route
@@ -97,9 +98,6 @@ class Graph:
 #DIJKSTRA implementation end -----------------------
 
 nodes=["1","2","3"]
-edges={"1,2":"down",
-       "1,3":"down",
-       "2,3":"down",}
 
 forward_edges=[("1", "2", 0), ("2", "3", 0), ("3", "4", 0),("4", "5", 0),("1", "5", 0),
         ("6", "7", 0), ("7", "8", 0), ("8", "9", 0),("9", "10", 0),("10", "11", 0),
@@ -115,10 +113,12 @@ backward_edges=[("2", "1", 0), ("3", "2", 0), ("4", "3", 0),("5", "4", 0),("5", 
         ("16", "15", 0), ("17", "7", 0), ("18", "9", 0),("19", "11", 0),("20", "13", 0),
         ("8", "1", 0), ("10", "2", 0), ("12", "3", 0),("14", "4", 0),("6", "5", 0)]
 
-edges2=[]
+edges=[]
 r=0
-p=0.7
+p_list=[0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,0.95,0.99]
+p=0.0
 x=0
+terminals=['1','3','17']
 
 
 def randomX():
@@ -170,38 +170,80 @@ def getEdges():
 
     return 1
 
-
-def main():
-    getNodes()
-    getEdges()
-    i=0
+def generateNodesMode():
+    i = 0
     for edge in list(forward_edges):
         x = randomX()
         if x <= p:
             # print i,":",edge, "is up"
-            forward_edges[i]=(edge[0],edge[1],1)
+            forward_edges[i] = (edge[0], edge[1], 1)
             backward_edges[i] = (edge[1], edge[0], 1)
-            print forward_edges[i]," - ", backward_edges[i]
+            # print forward_edges[i], " - ", backward_edges[i]
             # edge[3]="up"
         else:
             # print edge, " is down"
-            forward_edges[i]=(edge[0],edge[1],9999)
-            backward_edges[i] = (edge[1], edge[0], 9999)
-            print forward_edges[i]," - ", backward_edges[i]
+            forward_edges[i] = (edge[0], edge[1], 0)
+            backward_edges[i] = (edge[1], edge[0], 0)
+            # print forward_edges[i]," - ", backward_edges[i]
         i += 1
-    global edges2
-    edges2=forward_edges+backward_edges
-    print edges2
+    global edges
+    edges = forward_edges + backward_edges
+
+def runWithM(M,terminal_pairs):
+    r=0
+    for i in range(M):
+        # print "iteration: ",i+1
+        generateNodesMode()
+        all_terminal_connectivity=True
+        for pair in terminal_pairs:
+            if is2PointsConnected(pair[0],pair[1]) is False:
+                # print pair[0],",", pair[1], "are not connected"
+                all_terminal_connectivity=False
+                break
+            else:
+                continue
+        if all_terminal_connectivity is True:
+            # print "all terminals are connected!\n"
+            r+=1
+        # else:
+        #     print "not all terminals are connected\n"
+    return r
+
+def main():
+    getNodes()
+    getEdges()
+
+    # generate terminal pairs
+    terminal_pairs = [(terminals[i], terminals[j]) for i in range(len(terminals)) for j in range(i + 1, len(terminals))]
+    terminal_pairs = terminal_pairs + [(terminals[j], terminals[i]) for i in range(len(terminals)) for j in range(i + 1, len(terminals))]
+    # print terminal_pairs
+
+    # print edges
+
+    print "p\t\tM=1000\t\tM=10000\t"
+    for prob in p_list:
+        global p
+        p=prob
+        M=1000
+        M2=10000
+        print prob,"\t\t", runWithM(M,terminal_pairs)/1000.0,"\t\t",         runWithM(M2,terminal_pairs)/10000.0
+
 
 def is2PointsConnected(a,b):
-    graph = Graph(edges2)
-
-    print(graph.dijkstra(a, b))
-
-
+    graph = Graph(edges)
+    result = graph.dijkstra(a, b)
+    if len(result)==0:
+        # print "no path"
+        return False
+    else:
+        # print "path find: ", result
+        return True
 
 
 if __name__ == '__main__':
     main()
-    is2PointsConnected('17','1')
+
+
+
+
     # test()
